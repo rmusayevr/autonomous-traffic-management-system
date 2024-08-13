@@ -33,3 +33,19 @@ class TrafficLight:
 
 def traffic_light_factory(id: str, state: TrafficLightState, intersection: Intersection) -> TrafficLight:
     return TrafficLight(id=id, state=state, intersection=intersection)
+
+
+@dataclass
+class Vehicle:
+    id: str
+    type: str
+    speed: int
+    current_route: list[Intersection]
+    current_position: Intersection | None = None
+
+    def move_to_next_intersection(self):
+        if self.current_route:
+            self.current_position = self.current_route.pop(0)
+
+    def has_reached_destination(self) -> bool:
+        return len(self.current_route) == 0 and self.current_position is not None
