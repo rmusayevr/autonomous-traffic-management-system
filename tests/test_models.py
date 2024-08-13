@@ -6,6 +6,7 @@ from src.pytemplate.domain.models import (
     traffic_light_factory,
     TrafficLight,
     TrafficLightState,
+    TrafficSystem,
     Vehicle,
     vehicle_factory,
 )
@@ -170,6 +171,49 @@ def test_vehicle_factory_move_to_next_intersection():
 
     # Move to the next (final) intersection
     vehicle.move_to_next_intersection()
+    assert vehicle.current_position == intersection2
+    assert vehicle.current_route == []
+    assert vehicle.has_reached_destination()
+
+
+def test_add_vehicle():
+    intersection1 = intersection_factory(id="I1", connected_roads=["R1", "R2"])
+    intersection2 = intersection_factory(id="I2", connected_roads=["R2", "R3"])
+    vehicle = vehicle_factory(id="V1", type="Car", speed=60, current_route=[intersection1, intersection2])
+
+    system = TrafficSystem(intersections={}, traffic_lights={}, vehicles={})
+    system.add_vehicle(vehicle)
+
+    assert "V1" in system.vehicles
+    assert system.vehicles["V1"] == vehicle
+
+
+def test_update_traffic_light():
+    intersection = intersection_factory(id="I1", connected_roads=["R1", "R2"])
+    traffic_light = traffic_light_factory(id="TL1", state=TrafficLightState.RED, intersection=intersection)
+
+    system = TrafficSystem(intersections={}, traffic_lights={"TL1": traffic_light}, vehicles={})
+
+    # Update to YELLOW
+    system.update_traffic_light("TL1", TrafficLightState.YELLOW)
+    assert system.traffic_lights["TL1"].state == TrafficLightState.YELLOW
+
+
+def test_move_vehicle():
+    intersection1 = intersection_factory(id="I1", connected_roads=["R1", "R2"])
+    intersection2 = intersection_factory(id="I2", connected_roads=["R2", "R3"])
+    vehicle = vehicle_factory(id="V2", type="Bus", speed=50, current_route=[intersection1, intersection2])
+
+    system = TrafficSystem(intersections={}, traffic_lights={}, vehicles={})
+    system.add_vehicle(vehicle)
+
+    # Move vehicle to the first intersection
+    system.move_vehicle("V2")
+    assert vehicle.current_position == intersection1
+    assert vehicle.current_route == [intersection2]
+
+    # Move vehicle to the next intersection
+    system.move_vehicle("V2")
     assert vehicle.current_position == intersection2
     assert vehicle.current_route == []
     assert vehicle.has_reached_destination()
