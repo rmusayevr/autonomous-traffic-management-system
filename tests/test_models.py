@@ -1,9 +1,8 @@
-import pytest
-
 from src.pytemplate.domain.models import (
     Intersection,
     intersection_factory,
     traffic_light_factory,
+    traffic_system_factory,
     TrafficLight,
     TrafficLightState,
     TrafficSystem,
@@ -217,3 +216,30 @@ def test_move_vehicle():
     assert vehicle.current_position == intersection2
     assert vehicle.current_route == []
     assert vehicle.has_reached_destination()
+
+
+def test_traffic_system_factory():
+    intersection1 = intersection_factory(id="I1", connected_roads=["R1", "R2"])
+    intersection2 = intersection_factory(id="I2", connected_roads=["R2", "R3"])
+    traffic_light = traffic_light_factory(id="TL1", state=TrafficLightState.RED, intersection=intersection1)
+    vehicle = vehicle_factory(id="V1", type="Car", speed=60, current_route=[intersection1, intersection2])
+
+    intersections = {"I1": intersection1, "I2": intersection2}
+    traffic_lights = {"TL1": traffic_light}
+    vehicles = {"V1": vehicle}
+
+    system = traffic_system_factory(intersections, traffic_lights, vehicles)
+
+    assert isinstance(system, TrafficSystem)
+    assert system.intersections == intersections
+    assert system.traffic_lights == traffic_lights
+    assert system.vehicles == vehicles
+
+
+def test_traffic_system_factory_empty():
+    system = traffic_system_factory({}, {}, {})
+
+    assert isinstance(system, TrafficSystem)
+    assert system.intersections == {}
+    assert system.traffic_lights == {}
+    assert system.vehicles == {}

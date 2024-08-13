@@ -72,3 +72,11 @@ class TrafficSystem:
     def move_vehicle(self, vehicle_id: str):
         vehicle = self.vehicles[vehicle_id]
         vehicle.move_to_next_intersection()
+
+
+def traffic_system_factory(
+    intersections: dict[str, Intersection],
+    traffic_lights: dict[str, TrafficLight],
+    vehicles: dict[str, Vehicle],
+) -> TrafficSystem:
+    return TrafficSystem(intersections=intersections, traffic_lights=traffic_lights, vehicles=vehicles)
