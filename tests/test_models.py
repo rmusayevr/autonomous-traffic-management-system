@@ -243,3 +243,44 @@ def test_traffic_system_factory_empty():
     assert system.intersections == {}
     assert system.traffic_lights == {}
     assert system.vehicles == {}
+
+
+def test_add_vehicle():
+    intersection = intersection_factory(id="I1", connected_roads=["R1", "R2"])
+    vehicle = vehicle_factory(id="V2", type="Bus", speed=50, current_route=[intersection])
+
+    system = traffic_system_factory({}, {}, {})
+    system.add_vehicle(vehicle)
+
+    assert "V2" in system.vehicles
+    assert system.vehicles["V2"] == vehicle
+
+
+def test_update_traffic_light():
+    intersection = intersection_factory(id="I1", connected_roads=["R1", "R2"])
+    traffic_light = traffic_light_factory(id="TL2", state=TrafficLightState.RED, intersection=intersection)
+
+    system = traffic_system_factory({}, {"TL2": traffic_light}, {})
+
+    # Update to YELLOW
+    system.update_traffic_light("TL2", TrafficLightState.YELLOW)
+    assert system.traffic_lights["TL2"].state == TrafficLightState.YELLOW
+
+
+def test_move_vehicle():
+    intersection1 = intersection_factory(id="I1", connected_roads=["R1", "R2"])
+    intersection2 = intersection_factory(id="I2", connected_roads=["R2", "R3"])
+    vehicle = vehicle_factory(id="V3", type="Truck", speed=40, current_route=[intersection1, intersection2])
+
+    system = traffic_system_factory({"I1": intersection1, "I2": intersection2}, {}, {"V3": vehicle})
+
+    # Move vehicle to the first intersection
+    system.move_vehicle("V3")
+    assert vehicle.current_position == intersection1
+    assert vehicle.current_route == [intersection2]
+
+    # Move vehicle to the next (final) intersection
+    system.move_vehicle("V3")
+    assert vehicle.current_position == intersection2
+    assert vehicle.current_route == []
+    assert vehicle.has_reached_destination()
