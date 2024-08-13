@@ -1,7 +1,14 @@
 from unittest.mock import patch
 
-from src.pytemplate.domain.models import Intersection, intersection_factory, TrafficLight, TrafficLightState
-from src.pytemplate.entrypoints.cli.main import get_intersection_input, get_traffic_light_input, get_vehicle_input
+from src.pytemplate.domain.models import (
+    Intersection,
+    intersection_factory,
+    traffic_light_factory,
+    TrafficLight,
+    TrafficLightState,
+    vehicle_factory,
+)
+from src.pytemplate.entrypoints.cli.main import get_intersection_input, get_traffic_light_input, get_vehicle_input, main
 
 
 def test_get_intersection_input():
@@ -84,3 +91,85 @@ def test_get_vehicle_input_invalid_route():
     assert vehicles["V1"].type == "Car"
     assert vehicles["V1"].speed == 60.0
     assert [i.id for i in vehicles["V1"].current_route] == ["A", "B"]
+
+
+@patch(
+    "builtins.input",
+    side_effect=[
+        "2",  # Number of intersections
+        "A",
+        "B,C",  # Intersection A
+        "B",
+        "A,C",  # Intersection B
+        "C",
+        "B",  # Intersection C
+        "2",  # Number of traffic lights
+        "TL1",
+        "A",  # Traffic light TL1
+        "TL2",
+        "B",  # Traffic light TL2
+        "1",  # Number of vehicles
+        "V1",
+        "Car",
+        "60",  # Vehicle V1
+        "A,B,C"  # Route for Vehicle V1
+        "10",  # Simulation duration
+    ],
+)
+def test_main_function(mock_input):
+    # Mock the methods to return sample data
+    with (
+        patch(
+            "src.pytemplate.entrypoints.cli.main.get_intersection_input",
+            return_value={
+                "A": intersection_factory(id="A", connected_roads=["B", "C"]),
+                "B": intersection_factory(id="B", connected_roads=["A", "C"]),
+                "C": intersection_factory(id="C", connected_roads=["B"]),
+            },
+        ) as mock_get_intersection_input,
+        patch(
+            "src.pytemplate.entrypoints.cli.main.get_traffic_light_input",
+            return_value={
+                "TL1": traffic_light_factory(
+                    id="TL1", state=TrafficLightState.RED, intersection=Intersection(id="A", connected_roads=["B", "C"])
+                ),
+                "TL2": traffic_light_factory(
+                    id="TL2", state=TrafficLightState.RED, intersection=Intersection(id="B", connected_roads=["A", "C"])
+                ),
+            },
+        ) as mock_get_traffic_light_input,
+        patch(
+            "src.pytemplate.entrypoints.cli.main.get_vehicle_input",
+            return_value={
+                "V1": vehicle_factory(
+                    id="V1",
+                    type="Car",
+                    speed=60,
+                    current_route=[
+                        intersection_factory(id="A", connected_roads=["B", "C"]),
+                        intersection_factory(id="B", connected_roads=["A", "C"]),
+                        intersection_factory(id="C", connected_roads=["B"]),
+                    ],
+                )
+            },
+        ) as mock_get_vehicle_input,
+    ):
+        # Call the main function
+        main()
+
+        # Check if the methods were called correctly
+        mock_get_intersection_input.assert_called_once()
+        mock_get_traffic_light_input.assert_called_once_with(
+            {
+                "A": intersection_factory(id="A", connected_roads=["B", "C"]),
+                "B": intersection_factory(id="B", connected_roads=["A", "C"]),
+                "C": intersection_factory(id="C", connected_roads=["B"]),
+            }
+        )
+        mock_get_vehicle_input.assert_called_once_with(
+            {
+                "A": intersection_factory(id="A", connected_roads=["B", "C"]),
+                "B": intersection_factory(id="B", connected_roads=["A", "C"]),
+                "C": intersection_factory(id="C", connected_roads=["B"]),
+            }
+        )

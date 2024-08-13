@@ -1,4 +1,12 @@
-from src.pytemplate.domain.models import intersection_factory, traffic_light_factory, TrafficLightState, vehicle_factory
+from src.pytemplate.domain.models import (
+    intersection_factory,
+    traffic_light_factory,
+    traffic_system_factory,
+    TrafficLightState,
+    vehicle_factory,
+)
+from src.pytemplate.service.simulator import SimulationEngine
+from src.pytemplate.service.traffic_control import TrafficControlService
 
 
 def get_intersection_input():
@@ -71,3 +79,21 @@ def get_vehicle_input(intersections):
         vehicles[vehicle_id] = vehicle_factory(id=vehicle_id, type=vehicle_type, speed=vehicle_speed, current_route=vehicle_route)
 
     return vehicles
+
+
+def main():
+    # Get user inputs
+    intersections = get_intersection_input()
+    traffic_lights = get_traffic_light_input(intersections)
+    vehicles = get_vehicle_input(intersections)
+
+    # Create the traffic system with user inputs
+    traffic_system = traffic_system_factory(intersections=intersections, traffic_lights=traffic_lights, vehicles=vehicles)
+
+    # Create services
+    traffic_control_service = TrafficControlService()
+
+    # Run the simulation for a specified duration
+    simulation_duration = int(input("Enter the duration of the simulation (in seconds): "))
+    simulation_engine = SimulationEngine(traffic_system, traffic_control_service)
+    simulation_engine.run(duration=simulation_duration)
