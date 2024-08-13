@@ -1,6 +1,6 @@
 import pytest
 
-from src.pytemplate.domain.models import Intersection, intersection_factory, TrafficLight, TrafficLightState
+from src.pytemplate.domain.models import Intersection, intersection_factory, traffic_light_factory, TrafficLight, TrafficLightState
 
 
 def test_enum_values():
@@ -51,3 +51,29 @@ def test_change_state():
     # Test changing back to RED
     traffic_light.change_state(TrafficLightState.RED)
     assert traffic_light.state == TrafficLightState.RED
+
+
+def test_traffic_light_factory():
+    intersection = intersection_factory(id="A1", connected_roads=["Road 1", "Road 2"])
+    traffic_light = traffic_light_factory(id="TL1", state=TrafficLightState.RED, intersection=intersection)
+
+    assert isinstance(traffic_light, TrafficLight)
+    assert traffic_light.id == "TL1"
+    assert traffic_light.state == TrafficLightState.RED
+    assert traffic_light.intersection == intersection
+
+
+def test_traffic_light_factory_change_state():
+    intersection = intersection_factory(id="C3", connected_roads=["Road 5", "Road 6"])
+    traffic_light = traffic_light_factory(id="TL3", state=TrafficLightState.YELLOW, intersection=intersection)
+
+    # Ensure the initial state is correct
+    assert traffic_light.state == TrafficLightState.YELLOW
+
+    # Change the state to RED
+    traffic_light.change_state(TrafficLightState.RED)
+    assert traffic_light.state == TrafficLightState.RED
+
+    # Change the state to GREEN
+    traffic_light.change_state(TrafficLightState.GREEN)
+    assert traffic_light.state == TrafficLightState.GREEN
