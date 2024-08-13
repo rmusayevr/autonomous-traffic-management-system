@@ -1,4 +1,4 @@
-from src.pytemplate.domain.models import intersection_factory, traffic_light_factory, TrafficLightState
+from src.pytemplate.domain.models import intersection_factory, traffic_light_factory, TrafficLightState, vehicle_factory
 
 
 def get_intersection_input():
@@ -38,3 +38,36 @@ def get_traffic_light_input(intersections):
         )
 
     return traffic_lights
+
+
+def get_vehicle_route(intersections):
+    route_valid = False
+    while not route_valid:
+        route = input("Enter the route (comma-separated intersection IDs): ").strip().split(",")
+        route = [id.strip() for id in route]
+
+        if all(intersection_id in intersections for intersection_id in route):
+            vehicle_route = [intersections[intersection_id] for intersection_id in route]
+            route_valid = True
+            return vehicle_route
+        else:
+            print("Invalid route. Please make sure all intersection IDs are valid and try again.")
+
+
+def get_vehicle_input(intersections):
+    vehicles = {}
+
+    # Prompt the user for the number of vehicles
+    num_vehicles = int(input("Enter the number of vehicles: "))
+
+    # Loop through to get the details of each vehicle
+    for _ in range(num_vehicles):
+        vehicle_id = input("Enter the vehicle ID: ").strip()
+        vehicle_type = input("Enter the vehicle type: ").strip()
+        vehicle_speed = int(input("Enter the vehicle speed: ").strip())
+        vehicle_route = get_vehicle_route(intersections)
+
+        # Create the Vehicle object and add it to the dictionary
+        vehicles[vehicle_id] = vehicle_factory(id=vehicle_id, type=vehicle_type, speed=vehicle_speed, current_route=vehicle_route)
+
+    return vehicles

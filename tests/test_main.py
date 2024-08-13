@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 from src.pytemplate.domain.models import Intersection, intersection_factory, TrafficLight, TrafficLightState
-from src.pytemplate.entrypoints.cli.main import get_intersection_input, get_traffic_light_input
+from src.pytemplate.entrypoints.cli.main import get_intersection_input, get_traffic_light_input, get_vehicle_input
 
 
 def test_get_intersection_input():
@@ -47,3 +47,40 @@ def test_get_traffic_light_input_invalid_intersection():
 
     assert len(traffic_lights) == 1
     assert traffic_lights["TL1"].intersection == intersections["A"]
+
+
+def test_get_vehicle_input_valid_route():
+    intersections = {
+        "A": intersection_factory(id="A", connected_roads=["B"]),
+        "B": intersection_factory(id="B", connected_roads=["A", "C"]),
+        "C": intersection_factory(id="C", connected_roads=["B"]),
+    }
+
+    user_inputs = ["1", "V1", "Car", "60", "A, B, C"]
+
+    with patch("builtins.input", side_effect=user_inputs):
+        vehicles = get_vehicle_input(intersections)
+
+    assert len(vehicles) == 1
+    assert vehicles["V1"].id == "V1"
+    assert vehicles["V1"].type == "Car"
+    assert vehicles["V1"].speed == 60.0
+    assert [i.id for i in vehicles["V1"].current_route] == ["A", "B", "C"]
+
+
+def test_get_vehicle_input_invalid_route():
+    intersections = {
+        "A": intersection_factory(id="A", connected_roads=["B"]),
+        "B": intersection_factory(id="B", connected_roads=["A", "C"]),
+    }
+
+    user_inputs = ["1", "V1", "Car", "60", "A, X, B", "A, B"]
+
+    with patch("builtins.input", side_effect=user_inputs):
+        vehicles = get_vehicle_input(intersections)
+
+    assert len(vehicles) == 1
+    assert vehicles["V1"].id == "V1"
+    assert vehicles["V1"].type == "Car"
+    assert vehicles["V1"].speed == 60.0
+    assert [i.id for i in vehicles["V1"].current_route] == ["A", "B"]
