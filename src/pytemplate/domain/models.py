@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import Enum
 
 
@@ -8,3 +9,9 @@ class TrafficLightState(Enum):
 
     def __str__(self):
         return self.value
+
+
+@dataclass
+class Intersection:
+    id: str
+    connected_roads: list[str]
