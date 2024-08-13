@@ -49,3 +49,9 @@ class Vehicle:
 
     def has_reached_destination(self) -> bool:
         return len(self.current_route) == 0 and self.current_position is not None
+
+
+def vehicle_factory(
+    id: str, type: str, speed: int, current_route: list[Intersection], current_position: Intersection | None = None
+) -> Vehicle:
+    return Vehicle(id=id, type=type, speed=speed, current_route=current_route, current_position=current_position)

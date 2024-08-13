@@ -1,6 +1,14 @@
 import pytest
 
-from src.pytemplate.domain.models import Intersection, intersection_factory, traffic_light_factory, TrafficLight, TrafficLightState, Vehicle
+from src.pytemplate.domain.models import (
+    Intersection,
+    intersection_factory,
+    traffic_light_factory,
+    TrafficLight,
+    TrafficLightState,
+    Vehicle,
+    vehicle_factory,
+)
 
 
 def test_enum_values():
@@ -121,4 +129,47 @@ def test_has_reached_destination():
 
     # Move to the next (final) intersection
     vehicle.move_to_next_intersection()
+    assert vehicle.has_reached_destination()
+
+
+def test_vehicle_factory():
+    intersection1 = intersection_factory(id="I1", connected_roads=["R1", "R2"])
+    intersection2 = intersection_factory(id="I2", connected_roads=["R2", "R3"])
+    vehicle = vehicle_factory(id="V1", type="Car", speed=60, current_route=[intersection1, intersection2])
+
+    assert isinstance(vehicle, Vehicle)
+    assert vehicle.id == "V1"
+    assert vehicle.type == "Car"
+    assert vehicle.speed == 60
+    assert vehicle.current_route == [intersection1, intersection2]
+    assert vehicle.current_position is None
+
+
+def test_vehicle_factory_with_position():
+    intersection1 = intersection_factory(id="I1", connected_roads=["R1", "R2"])
+    intersection2 = intersection_factory(id="I2", connected_roads=["R2", "R3"])
+    vehicle = vehicle_factory(id="V2", type="Bus", speed=50, current_route=[intersection1, intersection2], current_position=intersection1)
+
+    assert isinstance(vehicle, Vehicle)
+    assert vehicle.id == "V2"
+    assert vehicle.type == "Bus"
+    assert vehicle.speed == 50
+    assert vehicle.current_route == [intersection1, intersection2]
+    assert vehicle.current_position == intersection1
+
+
+def test_vehicle_factory_move_to_next_intersection():
+    intersection1 = intersection_factory(id="I1", connected_roads=["R1", "R2"])
+    intersection2 = intersection_factory(id="I2", connected_roads=["R2", "R3"])
+    vehicle = vehicle_factory(id="V3", type="Truck", speed=40, current_route=[intersection1, intersection2])
+
+    # Move to the first intersection
+    vehicle.move_to_next_intersection()
+    assert vehicle.current_position == intersection1
+    assert vehicle.current_route == [intersection2]
+
+    # Move to the next (final) intersection
+    vehicle.move_to_next_intersection()
+    assert vehicle.current_position == intersection2
+    assert vehicle.current_route == []
     assert vehicle.has_reached_destination()
