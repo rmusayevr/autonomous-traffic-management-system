@@ -19,3 +19,13 @@ class Intersection:
 
 def intersection_factory(id: str, connected_roads: list[str]) -> Intersection:
     return Intersection(id=id, connected_roads=connected_roads)
+
+
+@dataclass
+class TrafficLight:
+    id: str
+    state: TrafficLightState
+    intersection: Intersection
+
+    def change_state(self, new_state: TrafficLightState):
+        self.state = new_state
