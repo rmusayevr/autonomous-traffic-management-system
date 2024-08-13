@@ -1,4 +1,4 @@
-from src.pytemplate.domain.models import intersection_factory
+from src.pytemplate.domain.models import intersection_factory, traffic_light_factory, TrafficLightState
 
 
 def get_intersection_input():
@@ -13,3 +13,28 @@ def get_intersection_input():
         )
 
     return intersections
+
+
+def get_traffic_light_input(intersections):
+    traffic_lights = {}
+
+    # Prompt the user for the number of traffic lights
+    num_traffic_lights = int(input("Enter the number of traffic lights: "))
+
+    # Loop through to get the details of each traffic light
+    for _ in range(num_traffic_lights):
+        traffic_light_id = input("Enter the traffic light ID: ")
+        intersection_id = input("Enter the intersection ID for this traffic light: ")
+
+        # Validate the intersection ID
+        while intersection_id not in intersections:
+            print(f"Intersection ID {intersection_id} not found. Please enter a valid intersection ID.")
+            intersection_id = input("Enter the intersection ID for this traffic light: ")
+
+        # Create the TrafficLight object and add it to the dictionary
+        intersection = intersections[intersection_id]
+        traffic_lights[traffic_light_id] = traffic_light_factory(
+            id=traffic_light_id, state=TrafficLightState.RED, intersection=intersection
+        )
+
+    return traffic_lights
