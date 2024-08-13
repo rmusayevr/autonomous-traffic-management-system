@@ -1,4 +1,4 @@
-from src.pytemplate.domain.models import Intersection, TrafficLightState
+from src.pytemplate.domain.models import Intersection, intersection_factory, TrafficLightState
 
 
 def test_enum_values():
@@ -17,3 +17,10 @@ def test_intersection_creation():
     intersection = Intersection(id="A1", connected_roads=["Road 1", "Road 2", "Road 3"])
     assert intersection.id == "A1"
     assert intersection.connected_roads == ["Road 1", "Road 2", "Road 3"]
+
+
+def test_intersection_factory():
+    intersection = intersection_factory(id="C3", connected_roads=["Road 4", "Road 5"])
+    assert isinstance(intersection, Intersection)
+    assert intersection.id == "C3"
+    assert intersection.connected_roads == ["Road 4", "Road 5"]
