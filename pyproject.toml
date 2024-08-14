@@ -31,6 +31,7 @@ test = [
     "pytest",
     "pytest-cov",
     "pytest-xdist",
+    "hypothesis==6.111.0",
 ]
 
 [tool.isort]
